@@ -4,7 +4,26 @@ __lua__
 --variables
 
 function _init()
--- add later
+
+-- player "time" (helth bar)
+player_time = 45
+max_time = 45
+
+-- test points to obtain (test helth bar)
+test_points = 100
+max_points = 100
+pass_mark = 60
+
+--current quetion
+current_question = 1
+total_questions = 20
+
+--techer cooldown
+teacher_cooldown = 0
+
+--game state
+game_state = "playerturn"
+
 end
 -->8
 --everything visual
@@ -17,13 +36,13 @@ function _draw()
 
 --test health bar (points missing)
 rect(2,10,82,20,7) --outline
-rectfill(3,11,81,19,8) --fill
+rectfill(3,11,3 + (test_points / max_points) * 78, 19, 8)
 print("100",84,12,7) --show current point
 
 
 --player helth bar (time)
 rect(25,119,86,126,7) 
-rectfill(26,120,85,125,11)
+rectfill(26,120,26 + (player_time / max_time) * 59, 125, 11)
 print("45",90,120,7) --show current player helth
 
 end
