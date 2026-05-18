@@ -1,18 +1,31 @@
 pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
---init
+--variables
 
 function _init()
 -- add later
 end
 -->8
---draw (everything visual)
+--everything visual
 
+--sprites
 function _draw()
  cls()
  spr(1,2,100,2,4)
  spr(65,96, 10, 2, 2)
+
+--test health bar (points missing)
+rect(2,10,82,20,7) --outline
+rectfill(3,11,81,19,8) --fill
+print("100",84,12,7) --show current point
+
+
+--player helth bar (time)
+rect(25,119,86,126,7) 
+rectfill(26,120,85,125,11)
+print("45",90,120,7) --show current player helth
+
 end
 -->8
 -- update
