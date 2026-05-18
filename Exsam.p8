@@ -45,9 +45,33 @@ rect(25,119,86,126,7)
 rectfill(26,120,26 + (player_time / max_time) * 59, 125, 11)
 print("45",90,120,7) --show current player helth
 
+-- "questio text bar (tests "attacks")
+rect(2,22,126,42,7)
+rectfill(3,23,125,41,0)
+print("quetion text",4,24,7)
+print("difrent quetion text",4,31,7)
+
+--answer text (players moves options)
+
+rect(21, 98, 125, 116, 7)
+rectfill(22, 99, 124, 115, 0)
+print("x:try again z:guess", 23, 101, 7) 
+print("c:skip v:ask teacher", 23, 109, 7)
+
+
 end
 -->8
 -- update
+
+function _update()
+ if btnp(5) then
+ if player_time >= 3 and test_points >= 3 then
+ player_time -= 3
+ test_points -= 3
+  end
+ end
+
+end
 __gfx__
 00000000000044444444000000004444444400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000444444444400000044444444440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
