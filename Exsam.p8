@@ -21,10 +21,15 @@ total_questions = 20
 --techer cooldown
 teacher_cooldown = 0
 
+--skipped_questions list
+ skipped_questions = {}
+ game_state = "playing"
+
 --game state
 game_state = "playerturn"
 
 end
+
 -->8
 --everything visual
 
@@ -32,18 +37,18 @@ end
 function _draw()
  cls()
  spr(1,2,100,2,4)
- spr(65,96, 10, 2, 2)
+ spr(65, 110, 2, 2, 2)
 
 --test health bar (points missing)
 rect(2,10,82,20,7) --outline
 rectfill(3,11,3 + (test_points / max_points) * 78, 19, 8)
-print("100",84,12,7) --show current point
+print(tostr(test_points).."pt", 84, 12, 7) -- dynamic number + "pt"
 
 
 --player helth bar (time)
 rect(25,119,86,126,7) 
 rectfill(26,120,26 + (player_time / max_time) * 59, 125, 11)
-print("45",90,120,7) --show current player helth
+print(tostr(player_time).."min", 90, 120, 7) -- dynamic number + "min"
 
 -- "questio text bar (tests "attacks")
 rect(2,22,126,42,7)
@@ -64,14 +69,59 @@ end
 -- update
 
 function _update()
+
+--cool down
+if teacher_cooldown > 0 then
+ teacher_cooldown -= 1
+end
+
+--actions
+
+--try harder (x button)
  if btnp(5) then
  if player_time >= 3 and test_points >= 3 then
  player_time -= 3
  test_points -= 3
+ end
+end
+ 
+--ask techer (v button)
+if btnp(7) then
+ if player_time >= 5 and teacher_cooldown == 0 then
+ player_time -= 5
+ test_points -= 5
+ teacher_cooldown = 4 -- blocks for 4 actions
+ end
+end 
+
+-- guess randomly (z) button
+
+if btnp(4) then
+ if player_time >= 1 then
+ player_time -= 1
+ if rnd(1) <= 0.25 then
+ test_points -= 5 -- 25% chance: test loses 5
   end
  end
-
 end
+
+-- skip (c button)
+
+if btnp(1) then
+ -- cost nothing, just mark the question as skipped
+ add(skipped_questions, true) -- we'll store a count
+ end
+ 
+-- win/lose 
+
+if test_points <= 40 then
+ game_state = "victory"
+elseif player_time <= 0 and test_points > 40 then
+ game_state = "defeat"
+ end
+end
+
+
 __gfx__
 00000000000044444444000000004444444400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000444444444400000044444444440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
