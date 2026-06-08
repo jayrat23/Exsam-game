@@ -3,6 +3,23 @@ version 43
 __lua__
 --variables
 
+--test "quetions" sturgles
+test_messages = {
+    "you can't seem to remember what you just read",
+    "you've read this three times.",
+    "the words are kinda jumbled up in your head",
+    "all the answers look the same.",
+    "you know it, but can't see the correct answer option.",
+    "your eyes skip to the wrong line.",
+    "the text blurs when you focus.",
+    "the question makes no sense.",
+    "you lose your place reading.",
+    "you have a sudden rush of frustration from trying to read."
+}
+
+-- test status tracking
+test_status = "playing"
+
 function _init()
 
 -- player "time" (helth bar)
@@ -26,101 +43,201 @@ teacher_cooldown = 0
  game_state = "playing"
 
 --game state
-game_state = "playerturn"
+ game_state = "playerturn"
+
+-- call the function to set the initial message
+ pick_random_message()
+
 
 end
 
--->8
---everything visual
+-- helper function to pick a random message
+function pick_random_message()
+    local random_index = flr(rnd(#test_messages)) + 1
+    current_message = test_messages[random_index]
 
---sprites
+function has(t, val)
+    for v in all(t) do
+        if v == val then return true end
+    end
+    return false
+ end
+end
+-->8
+-- visual visual
+
 function _draw()
- cls()
- spr(1,2,100,2,4)
- spr(65, 110, 2, 2, 2)
+    cls()
+    spr(1,2,100,2,4)
+    spr(65, 110, 2, 2, 2)
 
---test health bar (points missing)
-rect(2,10,82,20,7) --outline
-rectfill(3,11,3 + (test_points / max_points) * 78, 19, 8)
-print(tostr(test_points).."pt", 84, 12, 7) -- dynamic number + "pt"
+-- test points health bar
+    rect(2,10,82,20,7) -- outline
+    rectfill(3,11,3 + (test_points / max_points) * 78, 19, 8)
+    print(tostr(test_points).."pt", 84, 12, 7)
 
+-- player time health bar
+    rect(25,119,86,126,7)
+    rectfill(26,120,26 + (player_time / max_time) * 59, 125, 11)
+    print(tostr(player_time).."min", 90, 120, 7)
 
---player helth bar (time)
-rect(25,119,86,126,7) 
-rectfill(26,120,26 + (player_time / max_time) * 59, 125, 11)
-print(tostr(player_time).."min", 90, 120, 7) -- dynamic number + "min"
+-- question text box
+    rect(2,22,126,42,7)
+    rectfill(3,23,125,41,0)
+    print(current_message, 4, 24, 7)
 
--- "questio text bar (tests "attacks")
-rect(2,22,126,42,7)
-rectfill(3,23,125,41,0)
-print("quetion text",4,24,7)
-print("difrent quetion text",4,31,7)
+-- player action options
+    rect(21, 98, 125, 116, 7)
+    rectfill(22, 99, 124, 115, 0)
+    print("z:try again x:guess", 23, 101, 7)
 
---answer text (players moves options)
+-- teacher cooldown indicator
+    if teacher_cooldown > 0 then
+        print("c:skip v:ask teacher", 23, 109, 5)
+    else
+        print("c:skip v:ask teacher", 23, 109, 7)
+end
 
-rect(21, 98, 125, 116, 7)
-rectfill(22, 99, 124, 115, 0)
-print("x:try again z:guess", 23, 101, 7) 
-print("c:skip v:ask teacher", 23, 109, 7)
+-- ending screen display
 
+if game_state == "end_screen" then
+    cls()
+    rect(10, 10, 100, 100, 7) -- outline only
 
+-- text inside: "passed" or "failed"
+    local result_text = ""
+    if ending_message:find("victory") then
+        result_text = "passed"
+    elseif ending_message:find("defeat") then
+        result_text = "failed"
+    end
+
+    local text_x = (128 - #result_text * 4) / 2
+    print(result_text, text_x, 62, 7)
+end
 end
 -->8
--- update
+-- game updates
+
+-- check if a value exists in a table
+function has(t, val)
+    for v in all(t) do
+        if v == val then return true end
+    end
+    return false
+end
 
 function _update()
+    -- restart game if on end screen and z pressed
+    if game_state == "end_screen" then
+        if btnp(4) then -- z key
+            _init()
+        end
+        return
+    end
 
---cool down
-if teacher_cooldown > 0 then
- teacher_cooldown -= 1
+    -- teacher cooldown decrement
+    if teacher_cooldown > 0 then
+        teacher_cooldown -= 1
+    end
+
+    -- try again (z)
+    if btnp(4) then
+        if player_time >= 3 and test_points >= 3 then
+            player_time -= 3
+            test_points -= 3
+
+            current_question += 1
+            if current_question > total_questions then
+                if test_points <= 0 then
+                    ending_message = "perfect victory"
+                elseif test_points <= 40 then
+                    ending_message = "victory"
+                else
+                    ending_message = "defeat"
+                end
+                game_state = "end_screen"
+            else
+                pick_random_message()
+            end
+        end
+    end
+
+    -- guess (x)
+    if btnp(5) then
+        if player_time >= 1 then
+            player_time -= 1
+
+            if rnd(1) <= 0.25 then
+                test_points -= 5
+            end
+
+            current_question += 1
+            if current_question > total_questions then
+                if test_points <= 0 then
+                    ending_message = "perfect victory"
+                elseif test_points <= 40 then
+                    ending_message = "victory"
+                else
+                    ending_message = "defeat"
+                end
+                game_state = "end_screen"
+            else
+                pick_random_message()
+            end
+        end
+    end
+
+    -- skip (c)
+    if btnp(1) then
+        add(skipped_questions, current_question)
+
+        local next_question
+        repeat
+            next_question = flr(rnd(total_questions)) + 1
+        until next_question ~= current_question and not has(skipped_questions, next_question)
+
+        current_question = next_question
+        pick_random_message()
+    end
+
+    -- ask teacher (v)
+    if btnp(7) then
+        if player_time >= 5 and test_points >= 5 and teacher_cooldown == 0 then
+            player_time -= 5
+            test_points -= 5
+            teacher_cooldown = 4
+
+            current_question += 1
+            if current_question > total_questions then
+                if test_points <= 0 then
+                    ending_message = "perfect victory"
+                elseif test_points <= 40 then
+                    ending_message = "victory"
+                else
+                    ending_message = "defeat"
+                end
+                game_state = "end_screen"
+            else
+                pick_random_message()
+            end
+        end
+    end
+
+    -- end game if time runs out
+    if player_time <= 0 then
+        if test_points <= pass_mark then
+            test_status = "passed"
+            ending_message = "victory"
+        else
+            test_status = "failed"
+            ending_message = "defeat"
+        end
+        test_finished = true
+        game_state = "end_screen"
+    end
+
 end
-
---actions
-
---try harder (x button)
- if btnp(5) then
- if player_time >= 3 and test_points >= 3 then
- player_time -= 3
- test_points -= 3
- end
-end
- 
---ask techer (v button)
-if btnp(7) then
- if player_time >= 5 and teacher_cooldown == 0 then
- player_time -= 5
- test_points -= 5
- teacher_cooldown = 4 -- blocks for 4 actions
- end
-end 
-
--- guess randomly (z) button
-
-if btnp(4) then
- if player_time >= 1 then
- player_time -= 1
- if rnd(1) <= 0.25 then
- test_points -= 5 -- 25% chance: test loses 5
-  end
- end
-end
-
--- skip (c button)
-
-if btnp(1) then
- -- cost nothing, just mark the question as skipped
- add(skipped_questions, true) -- we'll store a count
- end
- 
--- win/lose 
-
-if test_points <= 40 then
- game_state = "victory"
-elseif player_time <= 0 and test_points > 40 then
- game_state = "defeat"
- end
-end
-
 
 __gfx__
 00000000000044444444000000004444444400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
