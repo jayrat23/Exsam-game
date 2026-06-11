@@ -1,9 +1,13 @@
+pico-8 cartridge // http://www.pico-8.com
+version 43
+__lua__
+
 --variables
 
 poke(0x5f2d, 1) -- enable keyboard input
 
 --chart to number helper
-chars=" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+chars=" !\"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 -- '
 s2c={}
 c2s={}
@@ -62,8 +66,8 @@ function _init()
  total_questions = 20
 
 -- teacher asks limit
- teacher_asks_left = 5  -- Player can ask the teacher 5 times
- show_teacher_message = false  -- Flag to control the message display
+ teacher_asks_left = 5  -- player can ask the teacher 5 times
+ show_teacher_message = false  -- flag to control the message display
 
 --skipped_questions list
  skipped_questions = {}
@@ -115,19 +119,19 @@ function _draw()
 
     -- skip option
     if #skipped_questions == total_questions then
-       print("c:skip", 23, 109, 5) -- Gray color
+       print("c:skip", 23, 109, 5) -- gray color
     else
-       print("c:skip", 23, 109, 7) -- White color
+       print("c:skip", 23, 109, 7) -- white color
     end 
 
     -- teacher ask option (grayed out if no asks left)
     if teacher_asks_left > 0 then
         print("v:ask teacher", 50, 109, 7)
     else
-        print("v:ask teacher", 50, 109, 5) -- Gray color
+        print("v:ask teacher", 50, 109, 5) -- gray color
     end
 
-    -- Show the "teacher can not help you any more" message if the flag is set
+    -- show the "teacher can not help you any more" message if the flag is set
     if show_teacher_message then
         local message = "the teacher can not\n help you any more"
         local x = (128 - #message * 4) / 2  
@@ -139,8 +143,8 @@ function _draw()
 if game_state == "end_screen" then
     cls()
     rect(10, 10, 118, 100, 7) -- outline only
-    -- "press Z to retake" (restart the)
-    local retake_text = "press Z to retake"
+    -- "press z to retake" (restart the)
+    local retake_text = "press z to retake"
     local retake_x = (128 - #retake_text * 4) / 2
     print(retake_text, retake_x, 72, 7)
 
@@ -178,14 +182,14 @@ function _update()
         return
     end
 
-    -- Check for key presses
+    -- check for key presses
     if stat(30) then
-        local key = stat(31) -- Declare key as a local variable
+        local key = stat(31) -- declare key as a local variable
 
-        -- Handle "ask teacher" input
+        -- handle "ask teacher" input
         if key == 'v' then
             if teacher_asks_left > 0 and player_time >= 5 and test_points >= 5 then
-                -- Deduct resources and decrement asks left
+                -- deduct resources and decrement asks left
                 player_time -= 5
                 test_points -= 5
                 teacher_asks_left -= 1
@@ -204,16 +208,16 @@ function _update()
                     pick_random_message()
                 end
             elseif teacher_asks_left == 0 then
-                -- Show the message if no asks left
+                -- show the message if no asks left
                 show_teacher_message = true
             end
         end
 
         -- try again (z)
         if key == 'z' then
-            if player_time >= 3 and test_points >= 3 then  -- Ensure player has enough resources
-                player_time -= 3  -- Deduct 2 minutes
-                test_points -= 3  -- Deduct 3 points
+            if player_time >= 3 and test_points >= 3 then  -- ensure player has enough resources
+                player_time -= 3  -- deduct 2 minutes
+                test_points -= 3  -- deduct 3 points
                 current_question += 1
 
                 if current_question > total_questions then
@@ -258,13 +262,13 @@ function _update()
 
         -- skip (c)
         if key == 'c' then
-            -- Check if all questions have been skipped
+            -- check if all questions have been skipped
             if #skipped_questions < total_questions then
                 add(skipped_questions, current_question)
 
-                -- Check if all questions have been skipped
+                -- check if all questions have been skipped
                 if #skipped_questions == total_questions then
-                    -- Do nothing, skip is now disabled
+                    -- do nothing, skip is now disabled
                 else
                     local next_question
                     repeat
@@ -291,7 +295,6 @@ function _update()
         game_state = "end_screen"
     end
 end
-
 __gfx__
 00000000000044444444000000004444444400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000444444444400000044444444440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
