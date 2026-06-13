@@ -2,6 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 43
 __lua__
 
+
 --variables
 
 poke(0x5f2d, 1) -- enable keyboard input
@@ -30,8 +31,6 @@ function equals(s1, s2)
     end
     return true
 end
-
-
 
 --test "quetions" sturgles
 test_messages = {
@@ -83,7 +82,7 @@ sp=1
 frames={1,3}
 
 -- test sprite animaiton
-test_sp=1
+test_sp=65
 test_frames={65,67,69}
 
 -- call the function to set the initial message
@@ -91,15 +90,13 @@ test_frames={65,67,69}
 
 end
 
-
 -- helper function to pick a random message
 function pick_random_message()
     local random_index = ceil(rnd(#test_messages))
     current_message = test_messages[random_index]
-
-
 end
--->8
+
+
 -- visual visual
 
 function _draw()
@@ -109,6 +106,7 @@ function _draw()
     -- test sprite animation (3 frames)
     spr(test_frames[flr(test_sp)], 110, 2, 2, 2)
 
+    -- rest of your _draw() code...
     -- test points health bar
     rect(2, 10, 82, 20, 7)
     rectfill(3, 11, 3 + (test_points / max_points) * 78, 19, 8)
@@ -174,11 +172,10 @@ function _draw()
     end
 end
 
--->8
+
+
 -- game logic
-
 function _update()
-
     -- player sprite animation
     if sp < 2 then
         sp = sp + 0.1
@@ -192,46 +189,16 @@ function _update()
     else
         test_sp = 1
     end
-    
+
     -- restart game if on end screen and z pressed
-    if game_state == "end_screen" and btnp(4) then -- z key
+    if game_state == "end_screen" and key("z") then
         _init()
     end
 
     -- only process key presses if the game is in "playerturn" state
-    if game_state == "playerturn" and stat(30) then
-        local key = stat(31) -- get the pressed key
-
-        -- debug: print the key code to verify input
-        print("key pressed: " .. key, 10, 10, 7)
-
-        -- handle "ask teacher" input (v key)
-        if key == ord("v") then
-            if teacher_asks_left > 0 and player_time >= 5 and test_points >= 5 then
-                player_time = player_time - 5
-                test_points = test_points - 5
-                teacher_asks_left = teacher_asks_left - 1
-                current_question = current_question + 1
-
-                if current_question > total_questions then
-                    if test_points <= 0 then
-                        ending_message = "perfect victory"
-                    elseif test_points <= 40 then
-                        ending_message = "victory"
-                    else
-                        ending_message = "defeat"
-                    end
-                    game_state = "end_screen"
-                else
-                    pick_random_message()
-                end
-            elseif teacher_asks_left == 0 then
-                show_teacher_message = true
-            end
-        end
-
+    if game_state == "playerturn" then
         -- try again (z key)
-        if key == ord("z") then
+        if key("z") then
             if player_time >= 3 and test_points >= 3 then
                 player_time = player_time - 3
                 test_points = test_points - 3
@@ -253,7 +220,7 @@ function _update()
         end
 
         -- guess (x key)
-        if key == ord("x") then
+        if key("x") then
             if player_time >= 1 then
                 player_time = player_time - 1
 
@@ -278,7 +245,7 @@ function _update()
         end
 
         -- skip (c key)
-        if key == ord("c") then
+        if key("c") then
             if #skipped_questions < total_questions then
                 add(skipped_questions, current_question)
 
@@ -293,6 +260,31 @@ function _update()
                     current_question = next_question
                     pick_random_message()
                 end
+            end
+        end
+
+        -- ask teacher (v key)
+        if key("v") then
+            if teacher_asks_left > 0 and player_time >= 5 and test_points >= 5 then
+                player_time = player_time - 5
+                test_points = test_points - 5
+                teacher_asks_left = teacher_asks_left - 1
+                current_question = current_question + 1
+
+                if current_question > total_questions then
+                    if test_points <= 0 then
+                        ending_message = "perfect victory"
+                    elseif test_points <= 40 then
+                        ending_message = "victory"
+                    else
+                        ending_message = "defeat"
+                    end
+                    game_state = "end_screen"
+                else
+                    pick_random_message()
+                end
+            elseif teacher_asks_left == 0 then
+                show_teacher_message = true
             end
         end
     end
@@ -314,16 +306,17 @@ function _update()
     end
 end
 
+
 __gfx__
-00000000000044444444000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000444444444400000004444444400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000444f4f444f440000044444444440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000004cccfff4ccc40000444f4f444f44000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000c667cffc667c00004ccccff4ccc4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000fc676cccc676cf000c677cccc677c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000fc766cffc766cf00fc776cccc776cf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000ffcccffffcccff00fc766cffc766cf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000ffffeeffff0000ffcccffffcccff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000044444444000000004444444400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000444444444400000044444444440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000444f4f444f440000444f4f444f44000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000004cccfff4ccc400004cccfff4ccc4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000c667cffc667c0000c667cffc667c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000fc676cccc676cf000c676cccc676c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000fc766cffc766cf00fc766cffc766cf00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000ffcccffffcccff00ffcccffffcccff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000ffffeeffff0000ffffffeeffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000ffffffff0000000ffffeeffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000111cccc1110000000ffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000011111cc1111100000111cccc1110000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
